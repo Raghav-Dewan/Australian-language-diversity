@@ -1,0 +1,214 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 500,
+  "title": {
+    "text": "The Multilingual Map of Australia",
+    "subtitle": "Share of population speaking a non-English language at home, 2021 Census.",
+    "anchor": "start",
+    "color": "#1d3557",
+    "fontSize": 20,
+    "subtitleFontSize": 12,
+    "subtitleColor": "#5f6b7a",
+    "offset": 14
+  },
+  "params": [
+    {
+      "name": "mapZoom",
+      "value": 610
+    },
+    {
+      "name": "mapLon",
+      "value": 134
+    },
+    {
+      "name": "mapLat",
+      "value": -28
+    },
+    {
+      "name": "minShare",
+      "value": 0,
+      "bind": {
+        "input": "range",
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "name": "Highlight above (%) "
+      }
+    }
+  ],
+  "projection": {
+    "type": "mercator",
+    "center": {
+      "expr": "[mapLon, mapLat]"
+    },
+    "scale": {
+      "expr": "mapZoom"
+    }
+  },
+  "layer": [
+    {
+      "data": {
+        "url": "data/australian-states.json",
+        "format": {
+          "property": "features"
+        }
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": "#ece7de",
+        "stroke": "#c8bfb3",
+        "strokeWidth": 0.9
+      }
+    },
+    {
+      "data": {
+        "url": "data/australian-states.json",
+        "format": {
+          "property": "features"
+        }
+      },
+      "transform": [
+        {
+          "lookup": "properties.STATE_NAME",
+          "from": {
+            "data": {
+              "url": "data/language_by_city.csv"
+            },
+            "key": "state",
+            "fields": [
+              "other_language_pct",
+              "city",
+              "top_language",
+              "top_language_pct"
+            ]
+          }
+        },
+        {
+          "filter": "datum.other_language_pct >= minShare"
+        }
+      ],
+      "mark": {
+        "type": "geoshape",
+        "stroke": "#ffffff",
+        "strokeWidth": 1.1
+      },
+      "encoding": {
+        "color": {
+          "field": "other_language_pct",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              8,
+              42
+            ],
+            "range": [
+              "#f8dfbd",
+              "#f39a76",
+              "#db4f48",
+              "#8f1d3a"
+            ]
+          },
+          "title": "Non-English speakers (%)",
+          "legend": {
+            "orient": "bottom-right",
+            "gradientLength": 170,
+            "format": ".0f"
+          }
+        },
+        "tooltip": [
+          {
+            "field": "city",
+            "type": "nominal",
+            "title": "Capital city region"
+          },
+          {
+            "field": "properties.STATE_NAME",
+            "type": "nominal",
+            "title": "State / Territory"
+          },
+          {
+            "field": "other_language_pct",
+            "type": "quantitative",
+            "title": "Non-English speaking (%)",
+            "format": ".1f"
+          },
+          {
+            "field": "top_language",
+            "type": "nominal",
+            "title": "Top language"
+          },
+          {
+            "field": "top_language_pct",
+            "type": "quantitative",
+            "title": "Top language share (%)",
+            "format": ".1f"
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "lon": 151.1,
+            "lat": -33.95,
+            "label": "Sydney 39.3%"
+          },
+          {
+            "lon": 144.8,
+            "lat": -38.35,
+            "label": "Melbourne 36.8%"
+          },
+          {
+            "lon": 115.4,
+            "lat": -32.25,
+            "label": "Perth 29.8%"
+          },
+          {
+            "lon": 130.7,
+            "lat": -13.15,
+            "label": "Darwin 27.7%"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "fontSize": 10.5,
+        "fontWeight": "bold",
+        "color": "#1d3557",
+        "dx": 4
+      },
+      "encoding": {
+        "longitude": {
+          "field": "lon",
+          "type": "quantitative"
+        },
+        "latitude": {
+          "field": "lat",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "label",
+          "type": "nominal"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  },
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "padding": {
+    "top": 10,
+    "bottom": 30,
+    "left": 5,
+    "right": 5
+  }
+}

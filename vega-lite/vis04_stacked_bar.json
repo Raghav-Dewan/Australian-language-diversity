@@ -1,0 +1,143 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 390,
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "background": "rgba(0,0,0,0)",
+  "title": {
+    "text": "Every Capital Became More Multilingual",
+    "subtitle": "Non-English speaking share from 2016 to 2021. Click the legend to isolate a city.",
+    "anchor": "start",
+    "color": "#ffffff",
+    "fontSize": 18,
+    "subtitleFontSize": 12,
+    "subtitleColor": "rgba(226,232,240,0.78)",
+    "offset": 12
+  },
+  "data": {
+    "url": "data/language_change_2016_2021.csv"
+  },
+  "params": [
+    {
+      "name": "citySel",
+      "select": {
+        "type": "point",
+        "fields": [
+          "city"
+        ]
+      },
+      "bind": "legend"
+    }
+  ],
+  "mark": {
+    "type": "line",
+    "point": {
+      "filled": true,
+      "size": 80,
+      "stroke": "white",
+      "strokeWidth": 1
+    },
+    "strokeWidth": 2.8
+  },
+  "encoding": {
+    "x": {
+      "field": "year",
+      "type": "quantitative",
+      "title": "Year",
+      "scale": {
+        "domain": [
+          2016,
+          2021
+        ]
+      },
+      "axis": {
+        "values": [
+          2016,
+          2021
+        ],
+        "labelColor": "#e2e8f0",
+        "titleColor": "#e2e8f0",
+        "grid": false
+      }
+    },
+    "y": {
+      "field": "other_language_pct",
+      "type": "quantitative",
+      "title": "Population speaking a non-English language (%)",
+      "axis": {
+        "grid": true,
+        "gridDash": [
+          3,
+          3
+        ],
+        "gridColor": "rgba(226,232,240,0.13)",
+        "labelColor": "#e2e8f0",
+        "titleColor": "#e2e8f0"
+      }
+    },
+    "color": {
+      "field": "city",
+      "type": "nominal",
+      "title": "City",
+      "scale": {
+        "domain": [
+          "Greater Sydney",
+          "Greater Melbourne",
+          "Greater Perth",
+          "Greater Adelaide",
+          "Greater Darwin",
+          "Australian Capital Territory",
+          "Greater Brisbane",
+          "Greater Hobart"
+        ],
+        "range": [
+          "#f94144",
+          "#f3722c",
+          "#f9c74f",
+          "#90be6d",
+          "#43aa8b",
+          "#4d96ff",
+          "#9b5de5",
+          "#f15bb5"
+        ]
+      },
+      "legend": {
+        "labelColor": "#e2e8f0",
+        "titleColor": "#a8dadc",
+        "labelFontSize": 11
+      }
+    },
+    "opacity": {
+      "condition": {
+        "param": "citySel",
+        "empty": true,
+        "value": 1
+      },
+      "value": 0.28
+    },
+    "tooltip": [
+      {
+        "field": "city",
+        "title": "City"
+      },
+      {
+        "field": "year",
+        "title": "Year"
+      },
+      {
+        "field": "other_language_pct",
+        "title": "Share (%)",
+        "format": ".1f"
+      }
+    ]
+  },
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

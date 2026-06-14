@@ -1,0 +1,111 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 160,
+  "data": {
+    "values": [
+      {
+        "value": "5.66M",
+        "label": "Australians speak a language",
+        "label2": "other than English at home",
+        "x": 1
+      },
+      {
+        "value": "22.3%",
+        "label": "of the total Australian",
+        "label2": "population (2021 Census)",
+        "x": 2
+      },
+      {
+        "value": "350+",
+        "label": "languages spoken",
+        "label2": "across Australia",
+        "x": 3
+      }
+    ]
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "text",
+        "fontSize": 56,
+        "fontWeight": "bold",
+        "dy": -18,
+        "font": "Playfair Display, Georgia, serif"
+      },
+      "encoding": {
+        "x": {
+          "field": "x",
+          "type": "ordinal",
+          "axis": null,
+          "scale": {
+            "paddingOuter": 0.4
+          }
+        },
+        "text": {
+          "field": "value",
+          "type": "nominal"
+        },
+        "color": {
+          "value": "#c0392b"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "fontSize": 13.5,
+        "dy": 14,
+        "font": "Source Sans 3, Arial, sans-serif",
+        "fontWeight": "600"
+      },
+      "encoding": {
+        "x": {
+          "field": "x",
+          "type": "ordinal",
+          "axis": null
+        },
+        "text": {
+          "field": "label",
+          "type": "nominal"
+        },
+        "color": {
+          "value": "#4a3b2a"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "fontSize": 13.5,
+        "dy": 32,
+        "font": "Source Sans 3, Arial, sans-serif",
+        "fontWeight": "600"
+      },
+      "encoding": {
+        "x": {
+          "field": "x",
+          "type": "ordinal",
+          "axis": null
+        },
+        "text": {
+          "field": "label2",
+          "type": "nominal"
+        },
+        "color": {
+          "value": "#4a3b2a"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  },
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  }
+}

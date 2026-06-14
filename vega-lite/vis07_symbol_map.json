@@ -1,0 +1,142 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 360,
+  "title": {
+    "text": "How Each Language Is Distributed Across Cities",
+    "subtitle": "Circle size = number of speakers. Click a language in the legend to isolate it.",
+    "anchor": "start",
+    "color": "#1d3557",
+    "fontSize": 18,
+    "subtitleFontSize": 12,
+    "subtitleColor": "#5f6b7a",
+    "offset": 12
+  },
+  "data": {
+    "url": "data/languages_by_city_long.csv"
+  },
+  "params": [
+    {
+      "name": "langSel",
+      "select": {
+        "type": "point",
+        "fields": [
+          "language"
+        ]
+      },
+      "bind": "legend"
+    }
+  ],
+  "mark": {
+    "type": "circle",
+    "opacity": 0.86
+  },
+  "encoding": {
+    "x": {
+      "field": "city",
+      "type": "nominal",
+      "sort": {
+        "field": "speakers",
+        "op": "sum",
+        "order": "descending"
+      },
+      "title": null,
+      "axis": {
+        "labelAngle": -28,
+        "labelFontSize": 11,
+        "labelFontWeight": "bold",
+        "labelColor": "#1d3557"
+      }
+    },
+    "y": {
+      "field": "speakers",
+      "type": "quantitative",
+      "title": "Speakers",
+      "axis": {
+        "format": ".0s",
+        "grid": true,
+        "gridDash": [
+          3,
+          3
+        ],
+        "gridColor": "rgba(29,53,87,0.12)",
+        "labelColor": "#374151",
+        "titleColor": "#374151"
+      }
+    },
+    "size": {
+      "field": "speakers",
+      "type": "quantitative",
+      "scale": {
+        "range": [
+          30,
+          1600
+        ]
+      },
+      "legend": null
+    },
+    "color": {
+      "field": "language",
+      "type": "nominal",
+      "scale": {
+        "domain": [
+          "Mandarin",
+          "Cantonese",
+          "Arabic",
+          "Vietnamese",
+          "Punjabi",
+          "Hindi"
+        ],
+        "range": [
+          "#e63946",
+          "#457b9d",
+          "#2a9d8f",
+          "#e9c46a",
+          "#f4a261",
+          "#bb86fc"
+        ]
+      },
+      "legend": {
+        "title": "Language",
+        "orient": "right",
+        "labelFontSize": 11
+      }
+    },
+    "opacity": {
+      "condition": {
+        "param": "langSel",
+        "value": 0.95
+      },
+      "value": 0.35
+    },
+    "tooltip": [
+      {
+        "field": "language",
+        "type": "nominal",
+        "title": "Language"
+      },
+      {
+        "field": "city",
+        "type": "nominal",
+        "title": "City"
+      },
+      {
+        "field": "speakers",
+        "type": "quantitative",
+        "title": "Speakers",
+        "format": ","
+      }
+    ]
+  },
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  },
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "background": "rgba(0,0,0,0)"
+}

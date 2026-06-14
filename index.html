@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Australia's Language Map | FIT2179 Data Visualisation 2</title>
+  <meta name="description" content="A data story of language diversity across Australia's capital cities: 2021 Census.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- External styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Vega-Lite v5 -->
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
+<style>
+/* ══════════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════════ */
+:root {
+  --navy:       #1d3557;
+  --red:        #c0392b;
+  --gold:       #e9c46a;
+  --teal:       #2a9d8f;
+  --orange:     #f4a261;
+  --blue:       #457b9d;
+  --sky:        #fdf8f0;
+  --sky2:       #f0e8d8;
+  --earth:      #2d1f17;
+  --deep:       #0d1b2a;
+  --card:       rgba(255,255,255,0.97);
+  --rad:        10px;
+  --max:        1140px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--navy);
+  overflow-x: hidden;
+  background: var(--sky);
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  line-height: 1.2;
+}
+
+/* ══════════════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════════════ */
+.container {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 28px;
+  position: relative;
+  z-index: 10;
+}
+
+.story-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 44px;
+  align-items: start;
+  margin-bottom: 72px;
+}
+.story-row > * { min-width: 0; }
+.story-row.flip { direction: rtl; }
+.story-row.flip > * { direction: ltr; min-width: 0; }
+
+.full-row { margin-bottom: 72px; }
+
+@media (max-width: 860px) {
+  .story-row, .story-row.flip { grid-template-columns: 1fr; direction: ltr; }
+}
+
+/* ══════════════════════════════════════════════════
+   SECTION BACKGROUNDS
+══════════════════════════════════════════════════ */
+
+/* Hero- warm cultural palette */
+.sec-hero {
+  background: linear-gradient(165deg, #fdf8f0 0%, #f5e6d0 55%, #e8d5b0 100%);
+  padding: 90px 0 130px;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* Maps- deep night sky */
+.sec-maps {
+  background: linear-gradient(180deg, #1a1433 0%, #251d47 100%);
+  padding: 110px 0 90px;
+  position: relative;
+  overflow: hidden;
+  color: #e0e6ed;
+}
+
+/* Change- warm earth */
+.sec-change {
+  background: linear-gradient(160deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 110px 0 90px;
+  position: relative;
+  overflow: hidden;
+  color: #e0e6ed;
+}
+
+/* Composition- light paper */
+.sec-composition {
+  background: #f9f6f1;
+  padding: 100px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Deep dive- very dark */
+.sec-deep {
+  background: #0d1b2a;
+  padding: 100px 0;
+  position: relative;
+  overflow: hidden;
+  color: #e0e6ed;
+}
+
+/* ══════════════════════════════════════════════════
+   ANIMATED SECTION DECORATIONS
+══════════════════════════════════════════════════ */
+
+/* Floating script glyphs (hero background) */
+.glyph {
+  position: absolute;
+  font-size: 2.2rem;
+  opacity: 0;
+  animation: floatUp linear infinite;
+  pointer-events: none;
+  user-select: none;
+  color: var(--navy);
+  z-index: 1;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(108vh) rotate(-8deg); opacity: 0; }
+  6%   { opacity: 0.16; }
+  88%  { opacity: 0.11; }
+  100% { transform: translateY(-14vh) rotate(12deg); opacity: 0; }
+}
+
+/* Twinkling stars (maps + change section) */
+#change-star-host {
+  position: absolute; inset: 0;
+  overflow: hidden; pointer-events: none; z-index: 0;
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes twinkle {
+  from { opacity: 0.08; transform: scale(1); }
+  to   { opacity: 0.88; transform: scale(1.5); }
+}
+
+/* Dot-grid pattern (change section) */
+.sec-change::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(160,190,255,0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none; z-index: 0;
+  animation: breathe 6s ease-in-out infinite alternate;
+}
+@keyframes breathe { from { opacity: 0.4; } to { opacity: 1; } }
+
+/* Cyber grid (deep section) */
+.cyber-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(201,160,68,0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,160,68,0.055) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none; z-index: 0;
+  transition: transform 0.18s ease-out;
+}
+
+/* Wave dividers */
+.wave-down {
+  position: absolute; bottom: -2px; left: 0;
+  width: 100%; height: 80px; overflow: hidden;
+  line-height: 0; z-index: 5;
+}
+.wave-down svg {
+  display: block; width: 200%; height: 100%;
+  animation: waveSlide 11s linear infinite;
+}
+.wave-up {
+  position: absolute; top: -2px; left: 0;
+  width: 100%; height: 80px; overflow: hidden;
+  line-height: 0; z-index: 5; transform: rotate(180deg);
+}
+.wave-up svg {
+  display: block; width: 200%; height: 100%;
+  animation: waveSlide 9s linear infinite reverse;
+}
+@keyframes waveSlide { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+/* ══════════════════════════════════════════════════
+   TERM TOOLTIPS
+══════════════════════════════════════════════════ */
+.term {
+  position: relative;
+  display: inline-block;
+  font-weight: 700;
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  border-radius: 3px;
+  padding: 0 3px;
+  transition: background 0.15s;
+}
+.term::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%; bottom: calc(100% + 10px);
+  width: max-content; max-width: 240px;
+  transform: translateX(-50%) translateY(6px);
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: #fffde7; color: #17202A;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22), 0 0 0 2px #17202A;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.82rem; font-weight: 600; line-height: 1.38;
+  white-space: normal;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 9999;
+}
+.term:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Colour variants */
+.t-red  { color: #e74c3c; background: rgba(231,76,60,0.1); }
+.t-blue { color: #2980b9; background: rgba(41,128,185,0.1); }
+.t-gold { color: #b7950b; background: rgba(183,149,11,0.1); }
+.t-teal { color: #0e6655; background: rgba(14,102,85,0.1); }
+/* Light variants for dark backgrounds */
+.t-lred  { color: #f5a797; background: rgba(245,167,151,0.13); }
+.t-lblue { color: #85c1e9; background: rgba(133,193,233,0.13); }
+.t-lgold { color: #f9e79f; background: rgba(249,231,159,0.13); }
+.t-lteal { color: #76d7c4; background: rgba(118,215,196,0.13); }
+
+/* ══════════════════════════════════════════════════
+   TEXT BLOCKS
+══════════════════════════════════════════════════ */
+.text-block {
+  border-radius: var(--rad);
+  padding: 34px 36px;
+}
+.text-block h2 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(201,160,68,0.45);
+  display: inline-block;
+}
+.text-block p { font-size: 1.02rem; margin-bottom: 14px; }
+.text-block p:last-child { margin-bottom: 0; }
+
+.tb-warm {
+  background: rgba(255,255,255,0.94);
+  border: 1px solid rgba(192,57,43,0.1);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+}
+.tb-warm h2 { color: var(--navy); }
+.tb-warm p  { color: #4a4a5a; }
+
+.tb-dark {
+  background: rgba(10,20,32,0.86);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.28);
+  color: #c9d6df;
+}
+.tb-dark h2 { color: #a8dadc; }
+.tb-dark p  { color: #b8c8d4; }
+
+.tb-earth {
+  background: rgba(12,18,48,0.92);
+  border: 1px solid rgba(100,140,255,0.18);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.50);
+}
+.tb-earth h2 { color: #bdd5ea; }
+.tb-earth p  { color: #8db4cc; }
+
+/* ══════════════════════════════════════════════════
+   CHART CARDS
+══════════════════════════════════════════════════ */
+.viz-card {
+  background: var(--card);
+  border-radius: var(--rad);
+  padding: 16px 14px 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  border: 1px solid rgba(0,0,0,0.04);
+  overflow: visible;
+  min-height: 380px;
+  min-width: 0;
+  width: 100%;
+}
+.viz-card.glass {
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+/* Ensure chart containers have defined size for width:"container" */
+.viz-card > div {
+  width: 100%;
+  display: block;
+  overflow-x: hidden;
+  min-height: 40px;
+}
+/* Ensure prompt-host children have correct width */
+.prompt-host { min-width: 0; }
+.prompt-host > .viz-card { width: 100%; }
+.chart-wrapper {
+  padding-top: 110px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.chart-wrapper .viz-card {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Map pan/zoom cursor feedback */
+.map-wrap { position: relative; cursor: grab; }
+.map-wrap.dragging { cursor: grabbing; }
+
+/* ══════════════════════════════════════════════════
+   HANDDRAWN PROMPT CHIPS
+══════════════════════════════════════════════════ */
+.prompt-host { position: relative; padding-top: 0; }
+
+.hd-prompt {
+  position: absolute; top: -100px; right: 16px; z-index: 20;
+  max-width: 260px;
+  padding: 11px 15px 13px;
+  background: #FFFDE7;
+  color: #17202A;
+  border: 3px solid #17202A;
+  border-radius: 16px 12px 18px 10px;
+  box-shadow: 5px 5px 0 var(--red);
+  transform: rotate(1.5deg);
+  font-family: 'Segoe Print', 'Comic Sans MS', cursive;
+  pointer-events: none;
+}
+.hd-prompt strong { display: block; color: #c0392b; font-size: 1rem; text-transform: uppercase; margin-bottom: 4px; }
+.hd-prompt span   { font-size: 0.85rem; line-height: 1.3; }
+
+/* Prompt arrow SVG */
+.prompt-arrow { display: block; margin-top: 6px; }
+
+/* Map pan prompt badge */
+.map-badge {
+  position: absolute; bottom: 12px; right: 12px; z-index: 30;
+  pointer-events: none;
+  padding: 6px 11px;
+  border-radius: 14px 12px 16px 10px;
+  background: #FFFDE7; color: #17202A;
+  border: 2px solid #17202A;
+  font-size: 0.78rem; font-weight: 900;
+  font-family: 'Segoe Print', 'Comic Sans MS', cursive;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--red);
+  transform: rotate(-1.5deg);
+}
+
+
+.map-note {
+  margin-top: 10px;
+  align-self: flex-start;
+  display: inline-block;
+  padding: 6px 11px;
+  border-radius: 14px 12px 16px 10px;
+  background: #FFFDE7;
+  color: #17202A;
+  border: 2px solid #17202A;
+  font-size: 0.78rem;
+  font-weight: 900;
+  font-family: 'Segoe Print', 'Comic Sans MS', cursive;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--red);
+  transform: rotate(-1.5deg);
+}
+
+
+.map-wrap .vega-bindings {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.map-wrap .vega-bindings label {
+  color: #17202A;
+  font-weight: 700;
+  font-family: 'Source Sans 3', Arial, sans-serif;
+  font-size: 0.88rem;
+}
+
+/* ══════════════════════════════════════════════════
+   ANNOTATION CARDS
+══════════════════════════════════════════════════ */
+.ann-card {
+  padding: 22px 26px;
+  border-radius: 0 var(--rad) var(--rad) 0;
+  border-left: 4px solid var(--red);
+  margin-top: 20px;
+  font-size: 0.98rem;
+  line-height: 1.8;
+}
+.ann-card h3 { margin-bottom: 10px; font-size: 1.15rem; }
+
+.ann-light { background: #fff; color: #2c3e50; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.ann-light h3 { color: var(--navy); }
+
+.ann-dark  { background: rgba(10,20,32,0.92); color: #b8c8d4; border-color: var(--blue); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.ann-dark h3 { color: #a8dadc; }
+
+.ann-earth { background: rgba(15,20,50,0.92); color: #9eb8c8; border-color: #7b5ea7; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+.ann-earth h3 { color: #a8dadc; }
+
+/* ══════════════════════════════════════════════════
+   HERO SECTION SPECIFICS
+══════════════════════════════════════════════════ */
+.hero-kicker {
+  text-align: center;
+  font-size: 0.82rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--red); margin-bottom: 14px;
+}
+.hero-h1 {
+  text-align: center;
+  font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+  color: var(--navy);
+  margin-bottom: 16px;
+}
+.hero-sub {
+  text-align: center;
+  font-size: 1.2rem; font-weight: 300;
+  max-width: 660px; margin: 0 auto 56px;
+  color: #5a4a3a;
+}
+
+/* ══════════════════════════════════════════════════
+   SECTION HEADINGS
+══════════════════════════════════════════════════ */
+.sec-h { text-align: center; font-size: clamp(1.8rem, 3.5vw, 2.5rem); margin-bottom: 12px; }
+.sec-sub { text-align: center; font-size: 1.04rem; font-weight: 300; max-width: 680px; margin: 0 auto 56px; }
+
+.on-light  { color: var(--navy); }
+.on-light-sub { color: #6b7280; }
+.on-dark   { color: #e8edf2; }
+.on-dark-sub { color: rgba(210,220,232,0.76); }
+.on-earth  { color: #bdd5ea; }
+.on-earth-sub { color: rgba(180,200,220,0.85); }
+
+/* ══════════════════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ══════════════════════════════════════════════════
+   METHODOLOGY / AUDIT
+══════════════════════════════════════════════════ */
+.audit-wrap {
+  background: rgba(10,16,26,0.96);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 44px 48px;
+  margin-top: 72px;
+}
+.audit-wrap h2 {
+  color: #a8dadc;
+  border-bottom: 2px solid rgba(168,218,220,0.4);
+  display: inline-block;
+  padding-bottom: 8px;
+  margin-bottom: 32px;
+  font-size: 1.6rem;
+}
+details.audit-item { border-bottom: 1px solid rgba(168,218,220,0.12); }
+details.audit-item summary {
+  list-style: none; cursor: pointer;
+  padding: 16px 4px;
+  display: flex; align-items: center; gap: 14px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; font-weight: 700;
+  color: #c9d6df;
+  transition: color 0.2s;
+}
+details.audit-item summary::-webkit-details-marker { display: none; }
+details.audit-item summary:hover { color: #a8dadc; }
+.cn {
+  background: #a8dadc; color: #1d3557;
+  border-radius: 50%; width: 26px; height: 26px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.82rem; font-weight: 900;
+}
+.audit-body {
+  padding: 18px 24px 24px;
+  background: rgba(0,0,0,0.28);
+  border: 1px solid rgba(168,218,220,0.1);
+  border-radius: 8px; margin-bottom: 16px;
+}
+.audit-body p { font-size: 0.94rem; line-height: 1.75; color: #9eb8c8; margin-bottom: 10px; }
+.audit-body p:last-child { margin-bottom: 0; }
+.framework-box {
+  background: rgba(0,0,0,0.35);
+  border-left: 4px solid #2980b9;
+  padding: 14px 16px;
+  border-radius: 0 6px 6px 0;
+  margin-top: 12px;
+  font-size: 0.88rem; line-height: 1.7;
+  color: #9eb8c8; font-family: 'Courier New', monospace;
+}
+.hl { color: #e0e6ed; font-weight: bold; }
+
+/* ══════════════════════════════════════════════════
+   HIDE VEGA ACTION BUTTONS
+══════════════════════════════════════════════════ */
+.vega-embed details,
+.vega-actions { display: none !important; }
+
+/* ══════════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════════ */
+.footer {
+  background: #060c14;
+  color: rgba(255,255,255,0.6);
+  padding: 40px 28px;
+  font-size: 0.82rem;
+  line-height: 1.75;
+}
+.footer-inner { max-width: var(--max); margin: 0 auto; }
+.footer a { color: #a8dadc; }
+.footer strong { color: rgba(255,255,255,0.88); }
+.footer ul { padding-left: 18px; margin: 8px 0 14px; }
+.footer li { margin-bottom: 4px; }
+
+@keyframes meteor {
+  0%   { transform: translateX(0) translateY(0) rotate(-30deg); opacity: 0.9; }
+  70%  { opacity: 0.7; }
+  100% { transform: translateX(220px) translateY(120px) rotate(-30deg); opacity: 0; }
+}
+.meteor {
+  position: absolute;
+  width: 2px; height: 60px;
+  background: linear-gradient(to bottom, rgba(200,215,255,0.9), transparent);
+  border-radius: 2px;
+  animation: meteor linear infinite;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════
+   HERO STAT GRID
+══════════════════════════════════════════ */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.86);
+  border: 1px solid rgba(192,57,43,0.12);
+  border-radius: 18px;
+  padding: 18px 16px 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  text-align: center;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.hero-stat .stat-value {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2.2rem, 5vw, 3.9rem);
+  line-height: 0.95;
+  color: var(--red);
+  margin-bottom: 10px;
+}
+.hero-stat .stat-line {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #4a3b2a;
+  line-height: 1.35;
+}
+@media (max-width: 720px) {
+  .hero-stats { grid-template-columns: 1fr; }
+}
+
+/* Put prompts beside their chart instead of over headings */
+.prompt-host {
+  display: block;
+  width: 100%;
+  padding-top: 0 !important;
+}
+.prompt-host .viz-card {
+  width: 100%;
+  min-width: 0;
+}
+.hd-prompt {
+  position: static;
+  top: auto;
+  right: auto;
+  margin: 0 0 12px auto;
+  max-width: 250px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 1- HERO
+════════════════════════════════════════════════════ -->
+<section class="sec-hero">
+  <!-- Floating language-script glyphs -->
+  <div id="glyph-host" aria-hidden="true"></div>
+
+  <div class="container">
+    <p class="hero-kicker" style="letter-spacing:0.14em; font-weight:600;">FIT2179 Data Visualisation 2 · Monash University · 2026</p>
+    <h1 class="hero-h1">Australia's Language Map</h1>
+    <p class="hero-sub">
+      Who we are, where we speak, and how we've changed: <br>
+      a data story of the 5.66&nbsp;million Australians who speak a language other than English at home.
+    </p>
+
+    <!-- Hero stat panel -->
+    <div class="full-row reveal" style="max-width:900px; margin-left:auto; margin-right:auto;">
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="stat-value">5.66M</div>
+          <div class="stat-line">Australians speak a language</div>
+          <div class="stat-line">other than English at home</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-value">22.3%</div>
+          <div class="stat-line">of the total Australian</div>
+          <div class="stat-line">population (2021 Census)</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-value">350+</div>
+          <div class="stat-line">languages spoken</div>
+          <div class="stat-line">across Australia</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHOROPLETH MAP + narrative text -->
+    <div class="story-row reveal">
+      <div style="display:flex; flex-direction:column; align-items:flex-start;">
+        <div class="viz-card map-wrap" id="map1-wrap" style="min-height:600px;">
+          <div id="vis1"></div>
+        </div>
+        <div class="map-note">✦ scroll to zoom · drag to pan</div>
+      </div>
+      <div class="text-block tb-warm">
+        <h2>The Uneven Geography of Language</h2>
+        <p>
+          Australia's <span class="term t-blue" data-tip="GCCSA = Greater Capital City Statistical Area. The ABS geography grouping suburbs around each capital city.">capital city regions</span>
+          vary dramatically. <span class="term t-red" data-tip="Greater Sydney had 39.3% of residents speaking a non-English language at home in the 2021 Census.">Greater Sydney</span>
+          leads at 39.3% - nearly <strong>four times the rate of Greater Hobart</strong> (9.9%).
+        </p>
+        <p>
+          Use the <span class="term t-gold" data-tip="The range slider filters which states appear coloured. States below the threshold turn light grey.">threshold slider below the map</span>
+          to isolate only the most multilingual states.
+          Scroll to zoom and drag to pan across Australia.
+        </p>
+        <p>
+          This east-coast concentration reflects the pull of
+          <span class="term t-teal" data-tip="Skilled worker, international student, and family reunion visas channel most arrivals into Sydney, Melbourne and Brisbane.">skilled migration pathways</span>,
+          international student enrolments, and established diaspora networks in Australia's three largest cities.
+        </p>
+      </div>
+    </div>
+
+    <!-- SYMBOL MAP + narrative text -->
+    <div class="story-row flip reveal">
+      <div class="text-block tb-warm">
+        <h2>Three Cities Carry the Load</h2>
+        <p>
+          In absolute numbers the concentration is even starker.
+          <span class="term t-red" data-tip="Sydney's 1,864,000 non-English speakers exceeds the entire population of South Australia.">Sydney's 1.86 million</span>
+          and <span class="term t-blue" data-tip="Melbourne has 1,582,000 non-English speakers.">Melbourne's 1.58 million</span>
+          together account for nearly <strong>70%</strong> of all non-English speakers in Australian capital cities.
+        </p>
+        <p>
+          Circle <span class="term t-gold" data-tip="Area is proportional to total non-English speaker count - not population share. This means Sydney's circle is 77× bigger than Hobart's.">size encodes total speakers</span>;
+          colour encodes the share of each city's total population.
+          Hover any circle for exact figures.
+        </p>
+        <p>
+          Darwin is small in absolute size but high in share (27.7%) : reflecting its geographical proximity to South-East Asia and its role as a regional <span class="term t-teal" data-tip="Darwin has historically been a gateway city for migration from Indonesia, the Philippines, and Timor-Leste.">gateway city</span>.
+        </p>
+      </div>
+      <div style="position:relative;">
+        <div class="viz-card map-wrap" id="map2-wrap" style="min-height:460px;">
+          <div id="vis2"></div>
+          <div class="map-badge">✦ scroll to zoom · drag to pan</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+
+  <!-- Wave divider to maps section -->
+  <div class="wave-down">
+    <svg viewBox="0 0 1200 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,40 C300,80 600,0 900,40 C1100,68 1200,24 1200,40 L1200,80 L0,80 Z" fill="#1a1433"/>
+      <path d="M0,56 C400,18 800,72 1200,56 L1200,80 L0,80 Z" fill="rgba(37,29,71,0.55)"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 2 - CITY RANKINGS & SLOPE
+════════════════════════════════════════════════════ -->
+<section class="sec-maps">
+  <div id="star-host" aria-hidden="true"></div>
+
+  <div class="wave-up">
+    <svg viewBox="0 0 1200 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,40 C300,80 600,0 900,40 C1100,68 1200,24 1200,40 L1200,80 L0,80 Z" fill="#1a1433"/>
+    </svg>
+  </div>
+
+  <div class="container">
+    <h2 class="sec-h on-dark reveal">Not All Capitals Are Equal</h2>
+    <p class="sec-sub on-dark-sub reveal" style="font-weight:500; color:rgba(230,230,255,0.9);">
+      The gap between Sydney (39.3%) and Hobart (9.9%) is vast - yet every city is growing more diverse.
+      Use the slider to filter; click the legend to isolate a city.
+    </p>
+
+    <div class="story-row reveal" style="overflow:visible; align-items:start;">
+      <!-- Dot plot with prompt above -->
+      <div class="prompt-host" style="padding-top:110px;">
+        <div class="hd-prompt" aria-hidden="true">
+          <strong>Try the slider!</strong>
+          <span>Drag it up to filter out less-multilingual cities and focus on the leaders.</span>
+          <svg class="prompt-arrow" width="90" height="44" viewBox="0 0 90 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 6 C28 28 56 36 80 42" stroke="#C0392B" stroke-width="4" stroke-linecap="round"/>
+            <path d="M68 28 L82 43 L60 42" fill="none" stroke="#C0392B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="viz-card glass" style="min-height:420px; overflow:visible;"><div id="vis3"></div></div>
+      </div>
+      <!-- Slope/line chart with prompt above -->
+      <div class="prompt-host" style="padding-top:110px;">
+        <div class="hd-prompt" style="transform:rotate(-1.5deg);" aria-hidden="true">
+          <strong>Click the legend!</strong>
+          <span>Highlight one city's line to see how fast it changed 2016 → 2021.</span>
+          <svg class="prompt-arrow" width="90" height="44" viewBox="0 0 90 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M82 6 C62 28 34 36 10 42" stroke="#C0392B" stroke-width="4" stroke-linecap="round"/>
+            <path d="M22 28 L8 43 L30 42" fill="none" stroke="#C0392B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="viz-card glass" style="min-height:420px; overflow:visible;"><div id="vis4"></div></div>
+      </div>
+    </div>
+
+    <div class="ann-card ann-dark reveal">
+      <h3>Every City Is Growing More Diverse</h3>
+      <p>
+        Between 2016 and 2021,
+        <span class="term t-lblue" data-tip="All eight Greater Capital City Statistical Areas increased their non-English speaking share over this period.">every single Australian capital city</span>
+        grew more linguistically diverse. The steepest slopes belong to
+        <span class="term t-lred" data-tip="Brisbane grew from 18.7% to 20.5% - a relative increase of 9.6% in five years.">Brisbane</span>
+        and <span class="term t-lgold" data-tip="Perth grew from 28.0% to 29.8%, driven by Indian and South-East Asian arrivals.">Perth</span>,
+        both driven by South Asian arrivals. Even
+        <span class="term t-lteal" data-tip="Hobart grew from 8.2% to 9.9% - still the lowest share but showing steady growth.">Greater Hobart</span>
+        added 1.7 percentage points. The trend is unambiguous: Australia is becoming more multilingual everywhere.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 3 - LANGUAGE CHANGE
+════════════════════════════════════════════════════ -->
+<section class="sec-change">
+  <div id="change-star-host" aria-hidden="true"></div>
+  <div class="container">
+    <h2 class="sec-h on-earth reveal">Which Languages Are Growing and Which Are Fading?</h2>
+    <p class="sec-sub on-earth-sub reveal" style="font-weight:500; color:rgba(180,205,235,0.92);">
+      The 2021 Census captured a generational shift. South Asian languages surged.
+      European languages of the post-war era declined. Hover for 2016 vs 2021 detail.
+    </p>
+
+    <div class="story-row reveal">
+      <div class="viz-card" style="min-height:460px; background:rgba(20,30,60,0.85); border:1px solid rgba(255,255,255,0.10);"><div id="vis5"></div></div>
+      <div class="viz-card" style="min-height:460px; background:rgba(20,30,60,0.85); border:1px solid rgba(255,255,255,0.10);"><div id="vis6"></div></div>
+    </div>
+
+    <div class="ann-card ann-earth reveal">
+      <h3>Punjabi's 80% Surge - and Italian's Slow Fade</h3>
+      <p>
+        The standout story is <span class="term t-lred" data-tip="Punjabi grew from 132,496 speakers in 2016 to 239,033 in 2021 - an 80.4% increase, driven by Sikh community migration to Melbourne and Sydney.">Punjabi's 80.4% growth</span>.
+        Meanwhile <span class="term t-lblue" data-tip="Italian speakers fell from 271,597 to 239,241 - a decline of 11.9% as the post-WWII Italian migration generation ages.">Italian fell 11.9%</span>
+        and <span class="term t-lgold" data-tip="Greek speakers declined from 237,588 to 218,732 - a 7.9% fall.">Greek fell 7.9%</span>.
+        These numbers represent a profound
+        <span class="term t-lteal" data-tip="Australia received over 800,000 European migrants between 1945–1975. Their grandchildren now predominantly speak English at home.">intergenerational transition</span>:
+        the languages of Australia's post-war migration era are giving way to the languages of South Asia, South-East Asia, and the Middle East.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 4 - COMPOSITION & FINGERPRINT
+════════════════════════════════════════════════════ -->
+<section class="sec-composition">
+  <div class="container">
+    <h2 class="sec-h on-light reveal">Each City Has Its Own Linguistic Fingerprint</h2>
+    <p class="sec-sub on-light-sub reveal" style="font-weight:600; color:#3d4d5c;">
+      The same languages appear everywhere, but their relative weight varies strikingly.
+      Arabic concentrates in Sydney; Vietnamese shapes Melbourne; Punjabi defines Perth.
+    </p>
+
+    <!-- Bubble plot + Heatmap -->
+    <div class="story-row reveal" style="overflow:visible;">
+      <div class="prompt-host" style="padding-top:110px;">
+        <div class="hd-prompt" style="transform:rotate(-1.8deg);" aria-hidden="true">
+          <strong>Click a language!</strong>
+          <span>Select a language in the legend to isolate it across all cities.</span>
+          <svg class="prompt-arrow" width="90" height="44" viewBox="0 0 90 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 6 C28 28 56 36 80 42" stroke="#C0392B" stroke-width="4" stroke-linecap="round"/>
+            <path d="M68 28 L82 43 L60 42" fill="none" stroke="#C0392B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="viz-card" style="min-height:380px; overflow:visible;"><div id="vis7"></div></div>
+      </div>
+      <div class="chart-wrapper"><div class="viz-card" style="min-height:420px;"><div id="vis8"></div></div></div>
+    </div>
+
+    <!-- Small multiples full-width -->
+    <div class="full-row reveal">
+      <div class="viz-card" style="min-height:500px;"><div id="vis9"></div></div>
+      <div class="ann-card ann-light" style="border-color: var(--gold);">
+        <h3>Small Multiples: City Patterns Side by Side</h3>
+        <p>
+          Each panel shows one city's top languages ranked by speaker count.
+          Sydney and Melbourne operate at a scale the other cities cannot match -
+          <span class="term t-red" data-tip="247,850 Mandarin speakers in Sydney - more than the entire non-English speaking population of Hobart and Darwin combined.">Sydney's 247,850 Mandarin speakers</span>
+          alone dwarf the totals of smaller capitals.
+          Perth is distinct: <span class="term t-teal" data-tip="Punjabi is Perth's second-largest community language (42,100 speakers), reflecting a strong Indian migration pipeline to Western Australia.">Punjabi is its second language</span>
+          rather than Vietnamese or Cantonese, reflecting WA's unique migration corridor from the Indian subcontinent.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 5 - DEEP DIVE: SEIFA + INTERACTIVE
+════════════════════════════════════════════════════ -->
+<section class="sec-deep">
+  <div class="cyber-grid" id="cyber-grid" aria-hidden="true"></div>
+  <div class="container">
+    <h2 class="sec-h on-dark reveal">Language, Place, and Advantage</h2>
+    <p class="sec-sub on-dark-sub reveal">
+      Where do language communities live in relation to socioeconomic advantage?
+      Click the legend to explore one language; drag a brush on the scatter to select suburbs.
+    </p>
+
+    <!-- Interactive bar + text -->
+    <div class="story-row reveal">
+      <div class="text-block tb-dark">
+        <h2>Where Does Each Language Live?</h2>
+        <p>
+          <span class="term t-lred" data-tip="Mandarin has 247,850 speakers in Sydney - the largest single language community in any Australian city.">Mandarin</span>
+          is heaviest in Sydney and Melbourne.
+          <span class="term t-lblue" data-tip="Arabic is overwhelmingly concentrated in Greater Sydney, particularly the southwest suburbs of Fairfield, Bankstown and Liverpool.">Arabic</span>
+          is strikingly concentrated in Sydney.
+          <span class="term t-lgold" data-tip="Vietnamese is Melbourne's second-largest community language - a legacy of refugee settlement after 1975.">Vietnamese</span>
+          skews heavily toward Melbourne.
+        </p>
+        <p>
+          Click any language in the legend to highlight its pattern. Click again to reset.
+          This lets you ask: <em>where does this language live and why does that pattern exist?</em>
+        </p>
+      </div>
+      <div class="prompt-host" style="padding-top:110px;">
+        <div class="hd-prompt" style="transform:rotate(1.2deg);" aria-hidden="true">
+          <strong>Click the legend →</strong>
+          <span>Isolate one language to trace it across every capital city.</span>
+        </div>
+        <div class="viz-card glass" style="min-height:430px;"><div id="vis10"></div></div>
+      </div>
+    </div>
+
+    <!-- Scatter + SEIFA full-width -->
+    <div class="full-row reveal prompt-host" style="margin-top:8px; padding-top:0;">
+      <div class="hd-prompt" aria-hidden="true">
+        <strong>Drag a brush!</strong>
+        <span>Select a cluster on the scatter. Named suburbs are pre-highlighted in orange.</span>
+        <svg class="prompt-arrow" width="90" height="44" viewBox="0 0 90 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M8 6 C28 28 56 36 80 42" stroke="#C0392B" stroke-width="4" stroke-linecap="round"/>
+          <path d="M68 28 L82 43 L60 42" fill="none" stroke="#C0392B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="viz-card glass" style="min-height:500px;"><div id="vis11"></div></div>
+      <div class="ann-card ann-dark">
+        <h3>Language Diversity and Socioeconomic Disadvantage: A Complex Picture</h3>
+        <p>
+          The dashed regression trend line shows a
+          <span class="term t-lred" data-tip="As multilingual share rises, SEIFA IRSAD scores tend to fall, but with significant scatter around the trend.">general negative relationship</span>
+          between multilingual share and SEIFA score. But the scatter reveals critical exceptions:
+          <span class="term t-lblue" data-tip="Chatswood (Sydney): 61.2% non-English speakers, SEIFA decile 9, one of NSW's most advantaged suburbs.">Chatswood</span>
+          and <span class="term t-lgold" data-tip="Glen Waverley (Melbourne): 57.3% non-English speakers, SEIFA decile 9 - among Victoria's most advantaged.">Glen Waverley</span>
+          are highly multilingual <em>and</em> highly advantaged, showing that linguistic diversity does not equal disadvantage.
+          Suburbs like <span class="term t-lteal" data-tip="Springvale (Melbourne): 71.8% non-English speakers, SEIFA decile 1 - among Victoria's most disadvantaged suburbs.">Springvale</span>
+          and <span class="term t-lred" data-tip="Cabramatta (Sydney): 68.9% non-English speakers, SEIFA decile 2.">Cabramatta</span>
+          reflect communities where recent arrivals cluster in affordable areas.
+          <em>Language and place together reveal far more than either alone.</em>
+        </p>
+      </div>
+    </div>
+
+    <!-- ══ METHODOLOGY AUDIT ══ -->
+    <div class="audit-wrap reveal">
+      <h2>Methodology &amp; Design Audit</h2>
+
+      <details class="audit-item">
+        <summary><span class="cn">1</span>&nbsp; Choropleth Map : Multilingual Share by State</summary>
+        <div class="audit-body">
+          <p><span class="hl">Data:</span> ABS Census 2021, LANP (Language Used at Home), aggregated to GCCSA then joined to GeoJSON by STATE_NAME. GeoJSON: tonywr71/GeoJson-Data (confirmed 8 features, STATE_NAME property).</p>
+          <p><span class="hl">Design:</span> Sequential orangered colour scale encodes ordered quantitative share using luminance - the appropriate channel for this data type (Munzner Ch.10). Mercator projection centred [133, −28] provides a familiar view. Pan/zoom via Vega signal params provides exploration without separate controls.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> State boundaries (spatial) · Non-English share (quantitative)<br><span class="hl">WHY:</span> Identify geographic distribution · compare states<br><span class="hl">HOW:</span> Geoshape mark · Luminance channel · Threshold slider param · Text annotation layer</div>
+        </div>
+      </details>
+
+      <details class="audit-item">
+        <summary><span class="cn">2</span>&nbsp; Proportional Symbol Map : Speaker Counts by City</summary>
+        <div class="audit-body">
+          <p><span class="hl">Data:</span> Speaker totals computed from GCCSA population × non-English share. Latitude/longitude: city centroids (verified against ABS GCCSA boundaries).</p>
+          <p><span class="hl">Design:</span> Area (size channel) encodes magnitude - the correct choice when comparing values spanning 77× range (Sydney vs Hobart). Luminance reinforces the same quantity as a redundant channel. Threshold size scale prevents the largest circles from dominating. Layered over geoshape for geographic context.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> City centroids (spatial) · Speaker count (quantitative)<br><span class="hl">WHY:</span> Compare absolute community sizes · locate concentration<br><span class="hl">HOW:</span> Circle mark · Area channel · Luminance channel · Layered geoshape base</div>
+        </div>
+      </details>
+
+      <details class="audit-item">
+        <summary><span class="cn">3</span>&nbsp; Dot Plot : Cities Ranked by Non-English Share</summary>
+        <div class="audit-body">
+          <p><span class="hl">Design:</span> Dot plot over bar chart: when values cluster between 10–40%, a bar chart's zero baseline wastes most of the chart area and exaggerates absolute differences. A dot plot with connecting rules preserves reading accuracy while eliminating baseline noise. Range slider param enables interactive filtering without a separate dropdown.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> Cities (nominal) · Share (quantitative)<br><span class="hl">WHY:</span> Rank cities on shared scale · filter<br><span class="hl">HOW:</span> Point mark · Position channel · Rule mark anchor · Range slider param · Inline text annotations</div>
+        </div>
+      </details>
+
+      <details class="audit-item">
+        <summary><span class="cn">4</span>&nbsp; Change Bars : 2016 → 2021</summary>
+        <div class="audit-body">
+          <p><span class="hl">Design:</span> A zero-centred change bar chart makes gains and losses immediately legible. The chart now computes 2016 and 2021 shares directly from the census-by-year file, then derives a change value per city. Clicking the legend isolates a city while keeping the shared zero baseline visible.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> Cities (nominal) · 2016/2021 share (quantitative) · Change (quantitative)<br><span class="hl">WHY:</span> Show directional change · compare rates of change<br><span class="hl">HOW:</span> Zero baseline · Bar mark · Point endcaps · Legend binding param · Inline value labels</div>
+        </div>
+      </details>
+
+      <details class="audit-item">
+        <summary><span class="cn">5–6</span>&nbsp; Bar Chart &amp; Diverging Bar : Language Rankings &amp; Growth</summary>
+        <div class="audit-body">
+          <p><span class="hl">Design:</span> Sorted horizontal bar encodes magnitude using position, the most accurate quantitative channel (Cleveland &amp; McGill, 1984). Inline text labels remove the need to cross-reference the axis. The diverging bar uses hue (red/blue) to encode sign at a meaningful zero crossing, the appropriate channel for this data type. Conditional colour test separates categories without a separate field.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> Languages (nominal) · Speaker count / Change % (quantitative)<br><span class="hl">WHY:</span> Compare community sizes · identify growing vs declining<br><span class="hl">HOW:</span> Bar marks · Position channel · Conditional hue for sign · Checkbox param · Annotated reference values</div>
+        </div>
+      </details>
+
+      <details class="audit-item">
+        <summary><span class="cn">7–8</span>&nbsp; Heatmap &amp; Language Lines : City × Language Patterns</summary>
+        <div class="audit-body">
+          <p><span class="hl">Design:</span> The heatmap uses rect marks with luminance encoding across city × language to show where each language is strongest. The companion chart now uses a normalised stacked bar so readers can isolate a language directly from the legend while still comparing the whole city mix.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> City × language matrix (nominal) · Speaker count (quantitative)<br><span class="hl">WHY:</span> Show linguistic fingerprint per city · compare composition<br><span class="hl">HOW:</span> Rect mark (heatmap) · Luminance channel · Normalised stacked bars · Legend binding (composition chart)</div>
+        </div>
+      </details>
+
+      <details class="audit-item">
+        <summary><span class="cn">9</span>&nbsp; Small Multiples : Top Languages per City</summary>
+        <div class="audit-body">
+          <p><span class="hl">Design:</span> Vega-Lite <code>facet</code> operator generates one bar panel per city with consistent axes. This enables city-to-city comparison without the visual clutter of 35 bars in a single chart. Consistent colour encoding (same language = same colour in all 12 visualisations) reduces cognitive load across the page.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> Language (nominal) · Speakers (quantitative) · City (nominal facet)<br><span class="hl">WHY:</span> Compare city-specific language rankings · identify unique patterns<br><span class="hl">HOW:</span> Facet operator · Bar marks · Consistent shared colour domain</div>
+        </div>
+      </details>
+
+      <details class="audit-item">
+        <summary><span class="cn">10</span>&nbsp; Interactive Language Lines : Legend Binding</summary>
+        <div class="audit-body">
+          <p><span class="hl">Design:</span> A layered line-and-point chart shows how each language is distributed across the capital cities. The legend remains clickable so readers can isolate one language at a time, while the opacity condition preserves the rest of the context in the background.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> Language (nominal) · City (nominal) · Speakers (quantitative)<br><span class="hl">WHY:</span> Trace where each language lives · compare city-level patterns<br><span class="hl">HOW:</span> Line + point marks · Legend binding param · Opacity condition</div>
+        </div>
+      </details>
+
+      <details class="audit-item">
+        <summary><span class="cn">11</span>&nbsp; Scatter + Brush : Multilingualism &amp; SEIFA</summary>
+        <div class="audit-body">
+          <p><span class="hl">Data:</span> ABS SEIFA 2021 IRSAD scores, SA2 level. Language share: ABS Census 2021 data by region, cross-referenced for suburb-level examples across five cities.</p>
+          <p><span class="hl">Design:</span> Scatter plot uses position (x, y), the most accurate quantitative channel for correlation tasks. A dashed regression line communicates the overall trend while an interval brush lets the reader focus on a cluster. Named suburbs remain highlighted in orange so the key outliers stay visible even when the rest of the points are filtered.</p>
+          <div class="framework-box"><span class="hl">WHAT:</span> Suburbs (nominal) · Multilingual % (quantitative) · SEIFA score (quantitative) · City (nominal)<br><span class="hl">WHY:</span> Discover correlation · identify advantaged and disadvantaged outliers<br><span class="hl">HOW:</span> Point marks · Position (x,y) · Regression transform · Dashed line mark · Interval brush param · Named suburb text + point annotations</div>
+        </div>
+      </details>
+
+      <div style="margin-top:32px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.07); font-size:0.8rem; color:#6b7280; text-align:center; line-height:1.7;">
+        <strong style="color:#a8dadc;">Author:</strong> Raghav Dewan &nbsp;·&nbsp;
+        <strong style="color:#a8dadc;">Student ID:</strong> 35835370 &nbsp;·&nbsp;
+        FIT2179 Data Visualisation 2 &nbsp;·&nbsp; Monash University &nbsp;·&nbsp; May 2026<br>
+        Generative AI (Claude by Anthropic) was used to assist with Vega-Lite code generation, CSS animation, and grammar checking - acknowledged per the FIT2179 AI use policy.
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Data Sources:</strong></p>
+    <ul>
+      <li>Australian Bureau of Statistics (ABS), <em>Census of Population and Housing 2016 &amp; 2021 - Language Used at Home (LANP) by GCCSA</em>. <a href="https://www.abs.gov.au/census/find-census-data/datapacks" target="_blank">abs.gov.au/census/datapacks</a> &mdash; CC BY 4.0</li>
+      <li>Australian Bureau of Statistics (ABS), <em>Socio-Economic Indexes for Areas (SEIFA) 2021 - IRSAD, Statistical Area Level 2</em>. <a href="https://www.abs.gov.au/statistics/people/people-and-communities/socio-economic-indexes-areas-seifa-australia/latest-release" target="_blank">abs.gov.au/seifa</a> &mdash; CC BY 4.0</li>
+    </ul>
+    <p><strong>Map boundaries:</strong> Australian states GeoJSON - tonywr71/GeoJson-Data (GitHub, public domain). Accessed June 2025.</p>
+    <p><strong>Libraries:</strong> Vega-Lite v5 (UW Interactive Data Lab, BSD licence) · Google Fonts: Playfair Display, Source Sans 3 (OFL).</p>
+    <p><strong>AI acknowledgement:</strong> Claude by Anthropic was used to assist with Vega-Lite code generation, CSS animations, grammar checking, and design planning, as permitted and required to be disclosed under the FIT2179 assignment AI policy.</p>
+  </div>
+</footer>
+
+<!-- ════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════ -->
+<script>
+/* ── Utility ── */
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+/* ── Pan / Zoom for maps ──────────────────────────────────────
+   Exactly mirrors the top-student's pattern:
+   wheel   → scale up the Vega signal "mapZoom"
+   drag    → translate "mapLon" / "mapLat" signals
+   We clamp zoom and lon/lat to valid Australian ranges.
+─────────────────────────────────────────────────────────────── */
+function attachMapInteraction(wrapId, view, cfg) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap || !view) return;
+
+  let zoom = view.signal(cfg.zSig);
+  let lon  = view.signal(cfg.lonSig);
+  let lat  = view.signal(cfg.latSig);
+  let dragging = false, lx = 0, ly = 0;
+  let rafId = 0, running = false, pending = false;
+
+  const push = () => {
+    rafId = 0;
+    if (running) { pending = true; return; }
+    running = true;
+    view.signal(cfg.zSig,   zoom)
+        .signal(cfg.lonSig, lon)
+        .signal(cfg.latSig, lat)
+        .runAsync()
+        .finally(() => {
+          running = false;
+          if (pending) { pending = false; schedule(); }
+        });
+  };
+  const schedule = () => { if (!rafId) rafId = requestAnimationFrame(push); };
+
+  /* Wheel → zoom */
+  wrap.addEventListener('wheel', e => {
+    /* Don't intercept Vega control widgets */
+    if (e.target.closest('.vega-bindings, input, select, button, label')) return;
+    e.preventDefault();
+    const delta = e.deltaMode === 1 ? e.deltaY * 16
+                : e.deltaMode === 2 ? e.deltaY * window.innerHeight
+                : e.deltaY;
+    zoom = clamp(zoom * Math.exp(-delta * 0.0015), cfg.minZ, cfg.maxZ);
+    schedule();
+  }, { passive: false });
+
+  /* Pointer drag → pan */
+  wrap.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;
+    if (e.target.closest('.vega-bindings, input, select, button, label')) return;
+    if (!e.target.closest('svg, canvas')) return;
+    dragging = true; lx = e.clientX; ly = e.clientY;
+    wrap.classList.add('dragging');
+    wrap.setPointerCapture && wrap.setPointerCapture(e.pointerId);
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (!dragging || !(e.buttons & 1)) return;
+    const pf = cfg.panFactor / zoom;
+    lon = clamp(lon - (e.clientX - lx) * pf, cfg.minLon, cfg.maxLon);
+    lat = clamp(lat + (e.clientY - ly) * pf, cfg.minLat, cfg.maxLat);
+    lx = e.clientX; ly = e.clientY;
+    schedule();
+  });
+  const stop = e => {
+    dragging = false;
+    wrap.classList.remove('dragging');
+    wrap.releasePointerCapture && wrap.releasePointerCapture(e.pointerId);
+  };
+  ['pointerup','pointercancel'].forEach(ev => wrap.addEventListener(ev, stop));
+  window.addEventListener('pointerup', stop);
+}
+
+/* ── Embed all charts ──────────────────────────────────────── */
+const opts = { actions: false, renderer: 'svg' };
+
+// Store views for resize handling
+const _views = [];
+function _embed(sel, spec, extraOpts) {
+  return vegaEmbed(sel, spec, Object.assign({}, opts, extraOpts || {}))
+    .then(res => {
+      _views.push(res.view);
+      // Force resize after embed to pick up container width
+      setTimeout(() => { try { res.view.resize().run(); } catch(e){} }, 50);
+      setTimeout(() => { try { res.view.resize().run(); } catch(e){} }, 300);
+      return res;
+    })
+    .catch(console.error);
+}
+
+// ResizeObserver to handle window resize
+if (window.ResizeObserver) {
+  const ro = new ResizeObserver(() => {
+    _views.forEach(v => { try { v.resize().run(); } catch(e){} });
+  });
+  ro.observe(document.body);
+}
+
+function runEmbeds() {
+  // Use rAF + setTimeout to ensure layout is fully settled before embedding.
+  // Waiting for window.load helps fonts, CSS and grid sizing settle first.
+  requestAnimationFrame(() => setTimeout(() => {
+  /* Hero stats are rendered as HTML cards above. */
+
+  /* Choropleth map */
+  _embed('#vis1', 'vega-lite/vis01_choropleth_map.json').then(res => {
+    if (!res) return;
+    attachMapInteraction('map1-wrap', res.view, {
+      zSig: 'mapZoom', lonSig: 'mapLon', latSig: 'mapLat',
+      minZ: 380, maxZ: 3200, minLon: 110, maxLon: 158,
+      minLat: -46, maxLat: -9, panFactor: 190
+    });
+  });
+
+  /* Symbol map */
+  _embed('#vis2', 'vega-lite/vis02_dot_plot.json').then(res => {
+    if (!res) return;
+    attachMapInteraction('map2-wrap', res.view, {
+      zSig: 'symZoom', lonSig: 'symLon', latSig: 'symLat',
+      minZ: 380, maxZ: 3200, minLon: 110, maxLon: 158,
+      minLat: -46, maxLat: -9, panFactor: 190
+    });
+  });
+
+  /* All other charts */
+  _embed('#vis3',  'vega-lite/vis03_slope_chart.json');
+  _embed('#vis4',  'vega-lite/vis04_stacked_bar.json');
+  _embed('#vis5',  'vega-lite/vis05_bar_top_languages.json');
+  _embed('#vis6',  'vega-lite/vis06_diverging_bar.json');
+  _embed('#vis7',  'vega-lite/vis07_symbol_map.json');
+  _embed('#vis8',  'vega-lite/vis08_heatmap.json');
+  _embed('#vis9',  'vega-lite/vis09_scatter_seifa.json');
+  _embed('#vis10', 'vega-lite/vis10_small_multiples.json');
+  _embed('#vis11', 'vega-lite/vis11_hero_stats.json');
+  }, 180));
+}
+
+window.addEventListener('load', () => {
+  // A second pass after everything has settled helps any container-fit charts.
+  runEmbeds();
+  setTimeout(() => _views.forEach(v => { try { v.resize().run(); } catch(e){} }), 900);
+});
+
+/* ── Floating language-script glyphs (hero section) ──────── */
+const GLYPHS = [
+  '你好','नमस्ते','مرحبا','Xin chào','ਸਤ ਸ੍ਰੀ ਅਕਾਲ','Γεια σας',
+  'Ciao','Hola','Kumusta','हिंदी','普通話','廣東話','한국어','日本語',
+  'বাংলা','اردو','فارسی','Ελληνικά','ภาษาไทย','Indonesia','Tagalog',
+  '★','✦','◆','△','○','✿'
+];
+(function spawnGlyphs() {
+  const host = document.getElementById('glyph-host');
+  if (!host) return;
+  for (let i = 0; i < 24; i++) {
+    const el = document.createElement('div');
+    el.className = 'glyph';
+    el.textContent = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+    el.style.left   = (Math.random() * 100) + 'vw';
+    el.style.animationDuration = (17 + Math.random() * 22) + 's';
+    el.style.animationDelay   = -(Math.random() * 38) + 's';
+    el.style.fontSize = (1.3 + Math.random() * 1.5) + 'rem';
+    host.appendChild(el);
+  }
+})();
+
+/* ── Twinkling stars (maps section + change section) ───────── */
+function spawnStarsInto(hostId, count, colourHex) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.5 + 0.5;
+    s.style.cssText = [
+      `width:${sz}px`, `height:${sz}px`,
+      `top:${Math.random()*100}%`, `left:${Math.random()*100}%`,
+      `animation-duration:${1.4 + Math.random() * 3}s`,
+      `animation-delay:${Math.random() * 5}s`,
+      colourHex ? `background:${colourHex}` : ''
+    ].join(';');
+    host.appendChild(s);
+  }
+}
+spawnStarsInto('star-host', 90);
+spawnStarsInto('change-star-host', 70, 'rgba(160,180,255,0.9)');
+
+/* Add a couple of subtle meteors to change section */
+(function spawnMeteors() {
+  const host = document.getElementById('change-star-host');
+  if (!host) return;
+  const positions = [
+    { top:'8%',  left:'15%', dur:'4.5s', delay:'0s'   },
+    { top:'22%', left:'55%', dur:'6.2s', delay:'2.1s' },
+    { top:'5%',  left:'78%', dur:'5.8s', delay:'4.4s' }
+  ];
+  positions.forEach(p => {
+    const m = document.createElement('div');
+    m.className = 'meteor';
+    m.style.cssText = `top:${p.top};left:${p.left};animation-duration:${p.dur};animation-delay:${p.delay}`;
+    host.appendChild(m);
+  });
+})();
+
+/* ── Cursor parallax → cyber grid tilt (deep section) ───── */
+document.addEventListener('mousemove', e => {
+  const grid = document.getElementById('cyber-grid');
+  if (!grid) return;
+  const x = (e.clientX / window.innerWidth  - 0.5) * 7;
+  const y = (e.clientY / window.innerHeight - 0.5) * 7;
+  grid.style.transform = `perspective(800px) rotateX(${-y}deg) rotateY(${x}deg)`;
+});
+
+/* ── Scroll reveal ─────────────────────────────────────── */
+const revealIO = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+document.querySelectorAll('.reveal').forEach(el => revealIO.observe(el));
+</script>
+</body>
+</html>

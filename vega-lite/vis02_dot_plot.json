@@ -1,0 +1,270 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 420,
+  "title": {
+    "text": "Three Cities Carry Most of the Speakers",
+    "subtitle": "Circle area = total non-English speakers; colour = share of city population.",
+    "anchor": "start",
+    "color": "#1d3557",
+    "fontSize": 20,
+    "subtitleFontSize": 12,
+    "subtitleColor": "#5f6b7a",
+    "offset": 14
+  },
+  "params": [
+    {
+      "name": "symZoom",
+      "value": 600
+    },
+    {
+      "name": "symLon",
+      "value": 134
+    },
+    {
+      "name": "symLat",
+      "value": -28
+    }
+  ],
+  "projection": {
+    "type": "mercator",
+    "center": {
+      "expr": "[symLon, symLat]"
+    },
+    "scale": {
+      "expr": "symZoom"
+    }
+  },
+  "layer": [
+    {
+      "data": {
+        "url": "data/australian-states.json",
+        "format": {
+          "property": "features"
+        }
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": "#f1ece4",
+        "stroke": "#cabfb2",
+        "strokeWidth": 0.8
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "city": "Greater Sydney",
+            "lat": -33.87,
+            "lon": 151.21,
+            "non_english": 1864000,
+            "pct": 39.3,
+            "top": "Mandarin"
+          },
+          {
+            "city": "Greater Melbourne",
+            "lat": -37.81,
+            "lon": 144.96,
+            "non_english": 1582000,
+            "pct": 36.8,
+            "top": "Mandarin"
+          },
+          {
+            "city": "Greater Brisbane",
+            "lat": -27.47,
+            "lon": 153.02,
+            "non_english": 484000,
+            "pct": 20.5,
+            "top": "Mandarin"
+          },
+          {
+            "city": "Greater Perth",
+            "lat": -31.95,
+            "lon": 115.86,
+            "non_english": 599000,
+            "pct": 29.8,
+            "top": "Mandarin"
+          },
+          {
+            "city": "Greater Adelaide",
+            "lat": -34.93,
+            "lon": 138.6,
+            "non_english": 364000,
+            "pct": 28.6,
+            "top": "Mandarin"
+          },
+          {
+            "city": "Australian Capital Territory",
+            "lat": -35.28,
+            "lon": 149.13,
+            "non_english": 93000,
+            "pct": 23.8,
+            "top": "Mandarin"
+          },
+          {
+            "city": "Greater Hobart",
+            "lat": -42.88,
+            "lon": 147.33,
+            "non_english": 24000,
+            "pct": 9.9,
+            "top": "Mandarin"
+          },
+          {
+            "city": "Greater Darwin",
+            "lat": -12.46,
+            "lon": 130.84,
+            "non_english": 37000,
+            "pct": 27.7,
+            "top": "Other"
+          }
+        ]
+      },
+      "mark": {
+        "type": "circle",
+        "opacity": 0.82,
+        "stroke": "#ffffff",
+        "strokeWidth": 1.6
+      },
+      "encoding": {
+        "longitude": {
+          "field": "lon",
+          "type": "quantitative"
+        },
+        "latitude": {
+          "field": "lat",
+          "type": "quantitative"
+        },
+        "size": {
+          "field": "non_english",
+          "type": "quantitative",
+          "title": "Non-English speakers",
+          "scale": {
+            "type": "threshold",
+            "domain": [
+              50000,
+              200000,
+              500000,
+              1000000
+            ],
+            "range": [
+              65,
+              150,
+              310,
+              540,
+              820
+            ]
+          },
+          "legend": {
+            "orient": "bottom-left",
+            "format": ".2s",
+            "title": "Non-English speakers",
+            "values": [
+              50000,
+              200000,
+              500000,
+              1000000
+            ]
+          }
+        },
+        "color": {
+          "field": "pct",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              8,
+              42
+            ],
+            "range": [
+              "#ffd7aa",
+              "#f79072",
+              "#db3f45",
+              "#8f1d3a"
+            ]
+          },
+          "legend": {
+            "orient": "right",
+            "title": "Share (%)",
+            "format": ".0f",
+            "gradientLength": 170
+          }
+        },
+        "tooltip": [
+          {
+            "field": "city",
+            "type": "nominal",
+            "title": "City"
+          },
+          {
+            "field": "non_english",
+            "type": "quantitative",
+            "title": "Non-English speakers",
+            "format": ","
+          },
+          {
+            "field": "pct",
+            "type": "quantitative",
+            "title": "Share of population (%)",
+            "format": ".1f"
+          },
+          {
+            "field": "top",
+            "type": "nominal",
+            "title": "Top language"
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "lon": 150.2,
+            "lat": -34.8,
+            "label": "Sydney 1.86M",
+            "align": "right"
+          },
+          {
+            "lon": 143.6,
+            "lat": -39.0,
+            "label": "Melbourne 1.58M",
+            "align": "right"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "fontSize": 11,
+        "fontWeight": "bold",
+        "color": "#1d3557"
+      },
+      "encoding": {
+        "longitude": {
+          "field": "lon",
+          "type": "quantitative"
+        },
+        "latitude": {
+          "field": "lat",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "label",
+          "type": "nominal"
+        },
+        "align": {
+          "field": "align",
+          "type": "nominal"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  },
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  }
+}

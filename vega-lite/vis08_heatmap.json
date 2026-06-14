@@ -1,0 +1,99 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 380,
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "title": {
+    "text": "Which Language Dominates in Each City?",
+    "subtitle": "Darker cell = more speakers. Sydney leads in Mandarin; Melbourne in Vietnamese.",
+    "anchor": "start",
+    "color": "#1d3557",
+    "fontSize": 18,
+    "subtitleFontSize": 12,
+    "subtitleColor": "#5f6b7a",
+    "offset": 12
+  },
+  "data": {
+    "url": "data/languages_by_city_long.csv"
+  },
+  "mark": {
+    "type": "rect",
+    "cornerRadius": 3
+  },
+  "encoding": {
+    "y": {
+      "field": "city",
+      "type": "nominal",
+      "sort": {
+        "field": "speakers",
+        "op": "sum",
+        "order": "descending"
+      },
+      "title": null,
+      "axis": {
+        "labelFontSize": 11,
+        "labelFontWeight": "bold",
+        "labelColor": "#1d3557"
+      }
+    },
+    "x": {
+      "field": "language",
+      "type": "nominal",
+      "sort": {
+        "field": "speakers",
+        "op": "sum",
+        "order": "descending"
+      },
+      "title": null,
+      "axis": {
+        "labelAngle": -30,
+        "labelFontSize": 11,
+        "labelColor": "#374151"
+      }
+    },
+    "color": {
+      "field": "speakers",
+      "type": "quantitative",
+      "title": "Speakers",
+      "scale": {
+        "scheme": "blues"
+      },
+      "legend": {
+        "format": ".0s",
+        "gradientLength": 130,
+        "titleColor": "#374151",
+        "labelColor": "#374151"
+      }
+    },
+    "tooltip": [
+      {
+        "field": "city",
+        "type": "nominal",
+        "title": "City"
+      },
+      {
+        "field": "language",
+        "type": "nominal",
+        "title": "Language"
+      },
+      {
+        "field": "speakers",
+        "type": "quantitative",
+        "title": "Speakers",
+        "format": ","
+      }
+    ]
+  },
+  "config": {
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "labelLimit": 220
+    }
+  }
+}

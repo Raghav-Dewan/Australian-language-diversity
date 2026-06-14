@@ -1,0 +1,138 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 420,
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "background": "rgba(0,0,0,0)",
+  "title": {
+    "text": "Top Languages by Capital City (2021)",
+    "subtitle": "Each city is normalised to 100% so its language mix is easy to compare at a glance.",
+    "anchor": "start",
+    "color": "#1d3557",
+    "fontSize": 18,
+    "subtitleFontSize": 12,
+    "subtitleColor": "#5f6b7a",
+    "offset": 12
+  },
+  "data": {
+    "url": "data/languages_by_city_long.csv"
+  },
+  "transform": [
+    {
+      "joinaggregate": [
+        {
+          "op": "sum",
+          "field": "speakers",
+          "as": "city_total"
+        }
+      ],
+      "groupby": [
+        "city"
+      ]
+    },
+    {
+      "calculate": "datum.speakers / datum.city_total",
+      "as": "share"
+    }
+  ],
+  "mark": {
+    "type": "bar",
+    "cornerRadiusEnd": 4
+  },
+  "encoding": {
+    "y": {
+      "field": "city",
+      "type": "nominal",
+      "sort": {
+        "field": "city_total",
+        "order": "descending"
+      },
+      "title": null,
+      "axis": {
+        "labelFontSize": 11,
+        "labelFontWeight": "bold",
+        "labelColor": "#1d3557"
+      }
+    },
+    "x": {
+      "field": "speakers",
+      "type": "quantitative",
+      "stack": "normalize",
+      "title": "Share of city language community",
+      "axis": {
+        "format": ".0%",
+        "grid": true,
+        "gridDash": [
+          3,
+          3
+        ],
+        "gridColor": "rgba(29,53,87,0.10)",
+        "labelColor": "#6b7280",
+        "titleColor": "#6b7280",
+        "titleFontSize": 10
+      }
+    },
+    "color": {
+      "field": "language",
+      "type": "nominal",
+      "scale": {
+        "domain": [
+          "Mandarin",
+          "Cantonese",
+          "Arabic",
+          "Vietnamese",
+          "Punjabi",
+          "Hindi"
+        ],
+        "range": [
+          "#e63946",
+          "#457b9d",
+          "#2a9d8f",
+          "#e9c46a",
+          "#f4a261",
+          "#bb86fc"
+        ]
+      },
+      "legend": {
+        "title": "Language",
+        "orient": "right",
+        "labelFontSize": 11,
+        "titleColor": "#1d3557",
+        "labelColor": "#1d3557"
+      }
+    },
+    "tooltip": [
+      {
+        "field": "city",
+        "type": "nominal",
+        "title": "City"
+      },
+      {
+        "field": "language",
+        "type": "nominal",
+        "title": "Language"
+      },
+      {
+        "field": "speakers",
+        "type": "quantitative",
+        "title": "Speakers",
+        "format": ","
+      },
+      {
+        "field": "share",
+        "type": "quantitative",
+        "title": "Share of city",
+        "format": ".1%"
+      }
+    ]
+  },
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

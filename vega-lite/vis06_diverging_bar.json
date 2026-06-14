@@ -1,0 +1,246 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 360,
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "background": "rgba(0,0,0,0)",
+  "title": {
+    "text": "Which Languages Are Growing & Which Are Fading?",
+    "subtitle": "% change in speakers 2016–2021. Red = growing · Blue =declining. Use the slider to focus",
+    "anchor": "start",
+    "color": "#ffffff",
+    "fontSize": 18,
+    "subtitleFontSize": 12,
+    "subtitleColor": "rgba(226,232,240,0.78)",
+    "offset": 12
+  },
+  "data": {
+    "url": "data/top_languages_australia.csv"
+  },
+  "params": [
+    {
+      "name": "minChange",
+      "value": -20,
+      "bind": {
+        "input": "range",
+        "min": -20,
+        "max": 90,
+        "step": 5,
+        "name": "Show changes above (%) "
+      }
+    }
+  ],
+  "transform": [
+    {
+      "filter": "datum.change_pct >= minChange"
+    }
+  ],
+  "layer": [
+    {
+      "mark": {
+        "type": "rule",
+        "color": "rgba(226,232,240,0.18)",
+        "strokeWidth": 1.2
+      },
+      "encoding": {
+        "x": {
+          "datum": 0,
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "language",
+          "type": "nominal",
+          "sort": {
+            "field": "change_pct",
+            "order": "descending"
+          }
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "bar",
+        "cornerRadiusEnd": 4,
+        "tooltip": true
+      },
+      "encoding": {
+        "y": {
+          "field": "language",
+          "type": "nominal",
+          "sort": {
+            "field": "change_pct",
+            "order": "descending"
+          },
+          "title": null,
+          "axis": {
+            "labelFontSize": 12,
+            "labelColor": "#e2e8f0",
+            "labelFontWeight": "bold"
+          }
+        },
+        "x": {
+          "field": "change_pct",
+          "type": "quantitative",
+          "title": "Change in speakers, 2016–2021 (%)",
+          "scale": {
+            "domain": [
+              -15,
+              90
+            ]
+          },
+          "axis": {
+            "grid": true,
+            "gridDash": [
+              3,
+              3
+            ],
+            "gridColor": "rgba(226,232,240,0.13)",
+            "labelColor": "#e2e8f0",
+            "titleColor": "#e2e8f0"
+          }
+        },
+        "color": {
+          "condition": {
+            "test": "datum.change_pct > 0",
+            "value": "#f94144"
+          },
+          "value": "#4d96ff"
+        },
+        "tooltip": [
+          {
+            "field": "language",
+            "type": "nominal",
+            "title": "Language"
+          },
+          {
+            "field": "change_pct",
+            "type": "quantitative",
+            "title": "Change (%)",
+            "format": "+.1f"
+          },
+          {
+            "field": "speakers_2021",
+            "type": "quantitative",
+            "title": "Speakers (2021)",
+            "format": ","
+          },
+          {
+            "field": "speakers_2016",
+            "type": "quantitative",
+            "title": "Speakers (2016)",
+            "format": ","
+          }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 80,
+        "stroke": "white",
+        "strokeWidth": 1
+      },
+      "encoding": {
+        "y": {
+          "field": "language",
+          "type": "nominal",
+          "sort": {
+            "field": "change_pct",
+            "order": "descending"
+          }
+        },
+        "x": {
+          "field": "change_pct",
+          "type": "quantitative"
+        },
+        "color": {
+          "condition": {
+            "test": "datum.change_pct > 0",
+            "value": "#f94144"
+          },
+          "value": "#4d96ff"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.change_pct > 0"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "fontSize": 10.5,
+        "dx": 6,
+        "align": "left"
+      },
+      "encoding": {
+        "y": {
+          "field": "language",
+          "type": "nominal",
+          "sort": {
+            "field": "change_pct",
+            "order": "descending"
+          }
+        },
+        "x": {
+          "field": "change_pct",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "change_pct",
+          "type": "quantitative",
+          "format": "+.0f%"
+        },
+        "color": {
+          "value": "rgba(255,220,190,0.95)"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.change_pct <= 0"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "fontSize": 10.5,
+        "dx": -6,
+        "align": "right"
+      },
+      "encoding": {
+        "y": {
+          "field": "language",
+          "type": "nominal",
+          "sort": {
+            "field": "change_pct",
+            "order": "descending"
+          }
+        },
+        "x": {
+          "field": "change_pct",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "change_pct",
+          "type": "quantitative",
+          "format": "+.0f%"
+        },
+        "color": {
+          "value": "rgba(160,210,255,0.95)"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

@@ -1,0 +1,272 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 460,
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "background": "rgba(0,0,0,0)",
+  "title": {
+    "text": "Language Diversity and Socioeconomic Advantage",
+    "subtitle": "Drag a brush to focus on a cluster. Named suburbs are highlighted in orange.",
+    "anchor": "start",
+    "color": "#ffffff",
+    "fontSize": 18,
+    "subtitleFontSize": 12,
+    "subtitleColor": "rgba(200,220,255,0.80)",
+    "offset": 14
+  },
+  "data": {
+    "url": "data/seifa_language_suburbs.csv"
+  },
+  "layer": [
+    {
+      "params": [
+        {
+          "name": "brush",
+          "select": {
+            "type": "interval",
+            "encodings": [
+              "x",
+              "y"
+            ]
+          }
+        }
+      ],
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 120,
+        "opacity": 0.9
+      },
+      "encoding": {
+        "x": {
+          "field": "multilingual_pct",
+          "type": "quantitative",
+          "title": "Population speaking a non-English language (%)",
+          "axis": {
+            "grid": true,
+            "gridDash": [
+              3,
+              3
+            ],
+            "gridColor": "rgba(255,255,255,0.12)",
+            "labelColor": "#e0e6ed",
+            "titleColor": "#e0e6ed"
+          }
+        },
+        "y": {
+          "field": "seifa_irsad_score",
+          "type": "quantitative",
+          "title": "SEIFA IRSAD Score (↑ more advantaged)",
+          "axis": {
+            "grid": true,
+            "gridDash": [
+              3,
+              3
+            ],
+            "gridColor": "rgba(255,255,255,0.12)",
+            "labelColor": "#e0e6ed",
+            "titleColor": "#e0e6ed"
+          }
+        },
+        "color": {
+          "field": "city",
+          "type": "nominal",
+          "title": "City",
+          "scale": {
+            "domain": [
+              "Greater Sydney",
+              "Greater Melbourne",
+              "Greater Brisbane",
+              "Greater Perth",
+              "Greater Adelaide"
+            ],
+            "range": [
+              "#f94144",
+              "#f3722c",
+              "#f9c74f",
+              "#90be6d",
+              "#43aa8b"
+            ]
+          },
+          "legend": {
+            "labelColor": "#e0e6ed",
+            "titleColor": "#a8dadc",
+            "labelFontSize": 11
+          }
+        },
+        "tooltip": [
+          {
+            "field": "suburb",
+            "type": "nominal",
+            "title": "Suburb"
+          },
+          {
+            "field": "city",
+            "type": "nominal",
+            "title": "City"
+          },
+          {
+            "field": "multilingual_pct",
+            "type": "quantitative",
+            "title": "Non-English (%)",
+            "format": ".1f"
+          },
+          {
+            "field": "seifa_irsad_score",
+            "type": "quantitative",
+            "title": "SEIFA IRSAD Score"
+          },
+          {
+            "field": "seifa_decile",
+            "type": "ordinal",
+            "title": "SEIFA Decile"
+          }
+        ],
+        "opacity": {
+          "condition": {
+            "param": "brush",
+            "value": 1
+          },
+          "value": 0.18
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "regression": "seifa_irsad_score",
+          "on": "multilingual_pct",
+          "as": [
+            "multilingual_pct",
+            "fit"
+          ]
+        }
+      ],
+      "mark": {
+        "type": "line",
+        "strokeDash": [
+          6,
+          4
+        ],
+        "strokeWidth": 2,
+        "color": "#9bd2ff"
+      },
+      "encoding": {
+        "x": {
+          "field": "multilingual_pct",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "fit",
+          "type": "quantitative"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": {
+            "field": "suburb",
+            "oneOf": [
+              "Chatswood",
+              "Glen Waverley",
+              "Springvale",
+              "Cabramatta"
+            ]
+          }
+        }
+      ],
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 220,
+        "stroke": "white",
+        "strokeWidth": 1
+      },
+      "encoding": {
+        "x": {
+          "field": "multilingual_pct",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "seifa_irsad_score",
+          "type": "quantitative"
+        },
+        "color": {
+          "value": "#f4a261"
+        },
+        "tooltip": [
+          {
+            "field": "suburb",
+            "type": "nominal",
+            "title": "Suburb"
+          },
+          {
+            "field": "city",
+            "type": "nominal",
+            "title": "City"
+          },
+          {
+            "field": "multilingual_pct",
+            "type": "quantitative",
+            "title": "Non-English (%)",
+            "format": ".1f"
+          },
+          {
+            "field": "seifa_irsad_score",
+            "type": "quantitative",
+            "title": "SEIFA IRSAD Score"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": {
+            "field": "suburb",
+            "oneOf": [
+              "Chatswood",
+              "Glen Waverley",
+              "Springvale",
+              "Cabramatta"
+            ]
+          }
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "dx": 8,
+        "dy": -8,
+        "fontSize": 11,
+        "fontWeight": "bold",
+        "color": "#fde68a",
+        "stroke": "rgba(13,27,42,0.8)",
+        "strokeWidth": 2
+      },
+      "encoding": {
+        "x": {
+          "field": "multilingual_pct",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "seifa_irsad_score",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "suburb",
+          "type": "nominal"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

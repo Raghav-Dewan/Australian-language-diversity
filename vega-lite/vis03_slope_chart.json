@@ -1,0 +1,221 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 310,
+  "title": {
+    "text": "Sydney Leads, But Every City Is Multilingual",
+    "subtitle": "Non-English speaking share by capital city, 2021. Drag the slider to focus on leaders.",
+    "anchor": "start",
+    "color": "#ffffff",
+    "fontSize": 18,
+    "subtitleFontSize": 12,
+    "subtitleColor": "rgba(226,232,240,0.78)",
+    "offset": 12
+  },
+  "data": {
+    "url": "data/language_by_city.csv"
+  },
+  "params": [
+    {
+      "name": "minPct",
+      "value": 0,
+      "bind": {
+        "input": "range",
+        "min": 0,
+        "max": 35,
+        "step": 1,
+        "name": "Show cities above (%) "
+      }
+    }
+  ],
+  "transform": [
+    {
+      "filter": "datum.other_language_pct >= minPct"
+    }
+  ],
+  "layer": [
+    {
+      "mark": {
+        "type": "rule",
+        "color": "rgba(226,232,240,0.24)",
+        "strokeWidth": 2
+      },
+      "encoding": {
+        "y": {
+          "field": "city",
+          "type": "nominal",
+          "sort": [
+            "Greater Sydney",
+            "Greater Melbourne",
+            "Greater Perth",
+            "Greater Adelaide",
+            "Greater Darwin",
+            "Australian Capital Territory",
+            "Greater Brisbane",
+            "Greater Hobart"
+          ]
+        },
+        "x": {
+          "datum": 0,
+          "type": "quantitative"
+        },
+        "x2": {
+          "field": "other_language_pct",
+          "type": "quantitative"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 190,
+        "stroke": "#ffffff",
+        "strokeWidth": 1.2
+      },
+      "encoding": {
+        "y": {
+          "field": "city",
+          "type": "nominal",
+          "sort": [
+            "Greater Sydney",
+            "Greater Melbourne",
+            "Greater Perth",
+            "Greater Adelaide",
+            "Greater Darwin",
+            "Australian Capital Territory",
+            "Greater Brisbane",
+            "Greater Hobart"
+          ],
+          "title": null,
+          "axis": {
+            "labelFontSize": 12,
+            "labelColor": "#e2e8f0"
+          }
+        },
+        "x": {
+          "field": "other_language_pct",
+          "type": "quantitative",
+          "title": "Population speaking a non-English language at home (%)",
+          "scale": {
+            "domain": [
+              0,
+              42
+            ]
+          },
+          "axis": {
+            "format": ".0f",
+            "grid": true,
+            "gridDash": [
+              3,
+              3
+            ],
+            "gridColor": "rgba(226,232,240,0.13)",
+            "labelColor": "#e2e8f0",
+            "titleColor": "#e2e8f0"
+          }
+        },
+        "color": {
+          "field": "other_language_pct",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              8,
+              42
+            ],
+            "range": [
+              "#ffd7aa",
+              "#f79072",
+              "#db3f45",
+              "#8f1d3a"
+            ]
+          },
+          "legend": null
+        },
+        "tooltip": [
+          {
+            "field": "city",
+            "type": "nominal",
+            "title": "City"
+          },
+          {
+            "field": "other_language_pct",
+            "type": "quantitative",
+            "title": "Non-English speaking (%)",
+            "format": ".1f"
+          },
+          {
+            "field": "top_language",
+            "type": "nominal",
+            "title": "Top language"
+          },
+          {
+            "field": "top_language_pct",
+            "type": "quantitative",
+            "title": "Top language share (%)",
+            "format": ".1f"
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "x": 39.3,
+            "city": "Greater Sydney",
+            "label": "← highest"
+          },
+          {
+            "x": 9.9,
+            "city": "Greater Hobart",
+            "label": "← lowest"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "dx": 8,
+        "fontSize": 11,
+        "fontStyle": "italic",
+        "color": "#f4a261"
+      },
+      "encoding": {
+        "x": {
+          "field": "x",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "city",
+          "type": "nominal",
+          "sort": [
+            "Greater Sydney",
+            "Greater Melbourne",
+            "Greater Perth",
+            "Greater Adelaide",
+            "Greater Darwin",
+            "Australian Capital Territory",
+            "Greater Brisbane",
+            "Greater Hobart"
+          ]
+        },
+        "text": {
+          "field": "label",
+          "type": "nominal"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  },
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "background": "rgba(0,0,0,0)"
+}

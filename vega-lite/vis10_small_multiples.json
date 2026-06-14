@@ -1,0 +1,145 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 400,
+  "autosize": {
+    "type": "fit",
+    "contains": "padding",
+    "resize": true
+  },
+  "background": "rgba(0,0,0,0)",
+  "title": {
+    "text": "Where Does Each Language Live?",
+    "subtitle": "Click a language in the legend to isolate its pattern across cities.",
+    "anchor": "start",
+    "color": "#ffffff",
+    "fontSize": 18,
+    "subtitleFontSize": 12,
+    "subtitleColor": "rgba(226,232,240,0.78)",
+    "offset": 12
+  },
+  "data": {
+    "url": "data/languages_by_city_long.csv"
+  },
+  "params": [
+    {
+      "name": "langPick",
+      "select": {
+        "type": "point",
+        "fields": [
+          "language"
+        ]
+      },
+      "bind": "legend"
+    }
+  ],
+  "mark": {
+    "type": "line",
+    "strokeWidth": 3,
+    "point": {
+      "filled": true,
+      "size": 70,
+      "stroke": "white",
+      "strokeWidth": 1
+    }
+  },
+  "encoding": {
+    "x": {
+      "field": "city",
+      "type": "nominal",
+      "sort": [
+        "Greater Sydney",
+        "Greater Melbourne",
+        "Greater Perth",
+        "Greater Brisbane",
+        "Greater Adelaide",
+        "Australian Capital Territory",
+        "Greater Darwin",
+        "Greater Hobart"
+      ],
+      "title": null,
+      "axis": {
+        "labelAngle": -25,
+        "labelFontSize": 11,
+        "labelFontWeight": "bold",
+        "labelColor": "#e2e8f0"
+      }
+    },
+    "y": {
+      "field": "speakers",
+      "type": "quantitative",
+      "title": "Speakers",
+      "axis": {
+        "grid": true,
+        "gridDash": [
+          3,
+          3
+        ],
+        "gridColor": "rgba(226,232,240,0.13)",
+        "labelColor": "#e2e8f0",
+        "titleColor": "#e2e8f0",
+        "labelFontSize": 11
+      }
+    },
+    "color": {
+      "field": "language",
+      "type": "nominal",
+      "scale": {
+        "domain": [
+          "Mandarin",
+          "Cantonese",
+          "Arabic",
+          "Vietnamese",
+          "Punjabi",
+          "Hindi"
+        ],
+        "range": [
+          "#e63946",
+          "#457b9d",
+          "#2a9d8f",
+          "#e9c46a",
+          "#f4a261",
+          "#bb86fc"
+        ]
+      },
+      "legend": {
+        "title": "Language",
+        "orient": "right",
+        "labelColor": "#e2e8f0",
+        "titleColor": "#a8dadc",
+        "labelFontSize": 11
+      }
+    },
+    "opacity": {
+      "condition": {
+        "param": "langPick",
+        "empty": true,
+        "value": 1
+      },
+      "value": 0.28
+    },
+    "tooltip": [
+      {
+        "field": "language",
+        "type": "nominal",
+        "title": "Language"
+      },
+      {
+        "field": "city",
+        "type": "nominal",
+        "title": "City"
+      },
+      {
+        "field": "speakers",
+        "type": "quantitative",
+        "title": "Speakers",
+        "format": ","
+      }
+    ]
+  },
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}
